@@ -52,17 +52,16 @@ resource "aws_security_group" "allow_traffic" {
 #ec2 instance launch
 
 resource "aws_instance" "webserver" {
-  ami           = "ami-0447a12f28fddb066"
-  instance_type = "t2.micro"
-  #availability_zone = "ap-south-1a"
+  ami             = "ami-0447a12f28fddb066"
+  instance_type   = "t2.micro"
   security_groups = [ "allow_traffic" ]
   key_name = "key1"
  
   connection {
-    type     = "ssh"
-    user     = "ec2-user"
+    type        = "ssh"
+    user        = "ec2-user"
     private_key = file("C:/Users/Daksh jain/Desktop/IIEC_VIMAL DAGA/HYBRID CLOUD/key1.pem")
-    host     = aws_instance.webserver.public_ip
+    host        = aws_instance.webserver.public_ip
   }
 
   provisioner "remote-exec" {
@@ -77,13 +76,12 @@ resource "aws_instance" "webserver" {
   }
 }
 
-
 # create volume
 resource "aws_ebs_volume" "web_vol" {
  availability_zone = aws_instance.webserver.availability_zone
  size = 1
  tags = {
-        Name = "web_vol"
+   Name = "web_vol"
  }
 }
 
@@ -94,16 +92,16 @@ resource "aws_volume_attachment" "web_vol" {
 depends_on = [
     aws_ebs_volume.web_vol,
   ]
- device_name = "/dev/xvdf"
- volume_id = aws_ebs_volume.web_vol.id
- instance_id = aws_instance.webserver.id
+ device_name  = "/dev/xvdf"
+ volume_id    = aws_ebs_volume.web_vol.id
+ instance_id  = aws_instance.webserver.id
  force_detach = true
 
 connection {
-    type     = "ssh"
-    user     = "ec2-user"
+    type        = "ssh"
+    user        = "ec2-user"
     private_key = file("C:/Users/Daksh jain/Desktop/IIEC_VIMAL DAGA/HYBRID CLOUD/key1.pem")
-    host     = aws_instance.webserver.public_ip
+    host        = aws_instance.webserver.public_ip
   }
 
 provisioner "remote-exec" {
@@ -116,7 +114,6 @@ provisioner "remote-exec" {
     ]
   }
 }
-
 
 # s3 bucket
 
@@ -139,7 +136,7 @@ depends_on = [
   ]
     bucket  = aws_s3_bucket.s3bucket.bucket
     key     = "flower.jpg"
-    source = "C:/Users/Daksh jain/Desktop/IIEC_VIMAL DAGA/HYBRID CLOUD/Terraform/task1/pic.jpg"
+    source  = "C:/Users/Daksh jain/Desktop/IIEC_VIMAL DAGA/HYBRID CLOUD/Terraform/task1/pic.jpg"
     acl     = "public-read"
 }
 
@@ -149,9 +146,8 @@ output "bucketid" {
 
 # cloud front
 
-
 variable "oid" {
-	type = string
+	type    = string
  	default = "S3-"
 }
 
@@ -188,7 +184,6 @@ depends_on = [
     max_ttl                = 86400
   }
 
-
   restrictions {
     geo_restriction {
       restriction_type = "none"
@@ -201,10 +196,10 @@ depends_on = [
 
 
 connection {
-    type     = "ssh"
-    user     = "ec2-user"
+    type        = "ssh"
+    user        = "ec2-user"
     private_key = file("C:/Users/Daksh jain/Desktop/IIEC_VIMAL DAGA/HYBRID CLOUD/key1.pem")
-    host     = aws_instance.webserver.public_ip
+    host        = aws_instance.webserver.public_ip
   }
 
 provisioner "remote-exec" {
@@ -216,14 +211,10 @@ provisioner "remote-exec" {
   }
 }
 
-
 resource "null_resource" "openwebsite"  {
-
-
 depends_on = [
     aws_cloudfront_distribution.s3_distribution, aws_volume_attachment.web_vol
   ]
-
 	provisioner "local-exec" {
 	    command = "start chrome  http://${aws_instance.webserver.public_ip}/"
   	}
